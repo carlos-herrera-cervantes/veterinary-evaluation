@@ -17,6 +17,6 @@ export class HealthController implements IControllerBase {
     return res.status(200).send({
       message: 'OK',
       timestamp: new Date(),
-    } as HealthCheckResponse);
+    });
   }
 }
