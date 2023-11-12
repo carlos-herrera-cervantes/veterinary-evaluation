@@ -1,12 +1,15 @@
+import * as dynamoose from 'dynamoose';
+const express = require('express');
+
 import { IControllerBase } from '../controllers/controller-base';
 import { RouteConfiguration } from '../types/route-configuration';
 import { apiConfig } from '../../config/api';
-
-const express = require('express');
+import { app } from '../../config/app.config';
 
 interface IWebApplication {
   run(): void;
   mapControllers(): void;
+  addPoorsManDbContext(): void;
 }
 
 class WebApplication implements IWebApplication {
@@ -59,6 +62,23 @@ class WebApplication implements IWebApplication {
   run(): void {
     const port = process.env.APP_PORT || 3000;
     this._app.listen(port, () => console.info(`Web application running on port ${port}`));
+  }
+
+  addPoorsManDbContext(): void {
+    if (app.environment === 'dev') {
+      dynamoose.aws.ddb.local();
+      return;
+    }
+
+    const ddb = new dynamoose.aws.ddb.DynamoDB({
+      credentials: {
+        accessKeyId: app.database.dynamodb.accessKeyId,
+        secretAccessKey: app.database.dynamodb.secretAccessKey,
+      },
+      region: app.database.dynamodb.region,
+    });
+
+    dynamoose.aws.ddb.set(ddb);
   }
 }
 
